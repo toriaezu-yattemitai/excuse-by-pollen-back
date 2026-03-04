@@ -12,7 +12,7 @@ class GenerationContext(BaseModel):
 
 class GenerateRequest(BaseModel):
     inputs: GenerationContext
-    options: dict[str, str] = Field(default_factory=dict)
+    options: dict[str, str | int] = Field(default_factory=dict)
     
     
 class RetryRequest(BaseModel):

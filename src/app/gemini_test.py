@@ -1,29 +1,47 @@
+import json
 import os
+from pathlib import Path
+import sys
+
 from dotenv import load_dotenv
 import google.generativeai as genai
 
-# .env 読み込み
-load_dotenv()
+SRC_PATH = Path(__file__).resolve().parents[1]
+if str(SRC_PATH) not in sys.path:
+    sys.path.append(str(SRC_PATH))
 
-# APIキー取得
-api_key = os.getenv("GEMINI_API_KEY")
+from app.services import build_prompt
 
-print("API KEY:", api_key[:5], "...")  # 確認用
 
-# Gemini設定
-genai.configure(api_key=api_key)
+MODEL_NAME = "gemini-3-flash-preview"
+INPUT_JSON_PATH = Path(__file__).resolve().parent / "data" / "dummy_prompt_request.json"
 
-# モデル生成
-model = genai.GenerativeModel("gemini-3-flash-preview")
 
-# AIに質問
-response = model.generate_content(
-    "花粉症がしんどい時の面白い言い訳を1つ作ってください"
-)
+def load_payload(path: Path) -> dict:
+    with path.open("r", encoding="utf-8") as file:
+        return json.load(file)
 
-result = {
-    "excuse": response.text,
-    "score": 85
-}
 
-print(result)
+def main() -> None:
+    load_dotenv()
+    api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key:
+        raise RuntimeError("GEMINI_API_KEY is not set. Please add it to .env.")
+
+    payload = load_payload(INPUT_JSON_PATH)
+    prompt = build_prompt(payload)
+
+    genai.configure(api_key=api_key)
+    model = genai.GenerativeModel(MODEL_NAME)
+    response = model.generate_content(prompt)
+
+    result = {
+        "input_json_path": str(INPUT_JSON_PATH),
+        "prompt": prompt,
+        "excuse": response.text,
+    }
+    print(json.dumps(result, ensure_ascii=False, indent=2))
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,13 @@
+from app.prompts.templates import (
+    FALLBACK_NUANCE,
+    FALLBACK_SITUATION,
+    FALLBACK_TARGET,
+    SYSTEM_INSTRUCTION,
+)
+
+__all__ = [
+    "SYSTEM_INSTRUCTION",
+    "FALLBACK_TARGET",
+    "FALLBACK_SITUATION",
+    "FALLBACK_NUANCE",
+]

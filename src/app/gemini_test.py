@@ -1,4 +1,5 @@
 import os
+import json
 from dotenv import load_dotenv
 import google.generativeai as genai
 
@@ -16,14 +17,35 @@ genai.configure(api_key=api_key)
 # モデル生成
 model = genai.GenerativeModel("gemini-3-flash-preview")
 
-# AIに質問
-response = model.generate_content(
-    "花粉症がしんどい時の面白い言い訳を1つ作ってください"
-)
+# プロンプト
+prompt = """
+次の条件で言い訳を作ってください。
 
+・花粉症がしんどい時の面白く、大げさな言い訳
+・説得力スコア(0〜100)
+
+JSONのみ出力してください。
+説明文は禁止です。
+
+{
+  "excuse": "...",
+  "score": number
+}
+"""
+
+# AIに質問
+response = model.generate_content(prompt)
+
+# Geminiの出力（文字列）
+text = response.text
+
+# JSONに変換
+data = json.loads(text)
+
+# 最終結果
 result = {
-    "excuse": response.text,
-    "score": 85
+    "excuse": data["excuse"],
+    "score": data["score"]
 }
 
 print(result)

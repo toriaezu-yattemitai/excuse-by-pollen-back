@@ -3,16 +3,16 @@ from pydantic import BaseModel, Field
 
 
 class GenerationContext(BaseModel):
-    symptpms: list[str]
+    symptoms: list[str]
     level: int
     target: str | None
-    sotiatopm: str | None
+    situation: str | None
     nuance: str | None
 
 
 class GenerateRequest(BaseModel):
     inputs: GenerationContext
-    options: dict[str, str]
+    options: dict[str, str] = Field(default_factory=dict)
     
     
 class RetryRequest(BaseModel):

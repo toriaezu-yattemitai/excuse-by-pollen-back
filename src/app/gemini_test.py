@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 import sys
 
+import json
 from dotenv import load_dotenv
 import google.generativeai as genai
 
@@ -42,6 +43,36 @@ def main() -> None:
     }
     print(json.dumps(result, ensure_ascii=False, indent=2))
 
+# プロンプト
+prompt = """
+次の条件で言い訳を作ってください。
+
+・花粉症がしんどい時の面白く、大げさな言い訳
+・説得力スコア(0〜100)
+
+JSONのみ出力してください。
+説明文は禁止です。
+
+{
+  "excuse": "...",
+  "score": number
+}
+"""
+
+# AIに質問
+response = model.generate_content(prompt)
+
+# Geminiの出力（文字列）
+text = response.text
+
+# JSONに変換
+data = json.loads(text)
+
+# 最終結果
+result = {
+    "excuse": data["excuse"],
+    "score": data["score"]
+}
 
 if __name__ == "__main__":
     main()

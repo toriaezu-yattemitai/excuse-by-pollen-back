@@ -25,4 +25,4 @@ class GenerationResult(BaseModel):
     excuse: str
     score: Annotated[int, Field(ge=0, le=100)]
     id: str
-    user_inputs: GenerationContext
+    used_inputs: GenerationContext

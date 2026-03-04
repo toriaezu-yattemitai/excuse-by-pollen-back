@@ -1,0 +1,12 @@
+{
+  "inputs": {
+    "symptoms": ["鼻水が止まらない"],
+    "level": 3,
+    "target": null,
+    "situation": null,
+    "nuance": "江戸時代風に"
+  },
+  "options": {
+    "max_chars": 220
+  }
+}

@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 
 from dotenv import load_dotenv
-import google.generativeai as genai
+from google import genai
 
 
 # -----------------------------
@@ -16,7 +16,7 @@ SRC_PATH = Path(__file__).resolve().parents[1]
 if str(SRC_PATH) not in sys.path:
     sys.path.append(str(SRC_PATH))
 
-from app.services.prompt_builder import build_prompt
+from app.services.v1 import build_prompt
 
 
 MODEL_NAME = "gemini-3-flash-preview"
@@ -41,10 +41,6 @@ def main() -> None:
     if not api_key:
         raise RuntimeError("GEMINI_API_KEY is not set. Please add it to .env.")
 
-    genai.configure(api_key=api_key)
-
-    model = genai.GenerativeModel(MODEL_NAME)
-
     # -----------------------------
     # JSON読み込み
     # -----------------------------
@@ -59,17 +55,18 @@ def main() -> None:
     # -----------------------------
 
     prompt = build_prompt(payload)
-
-    print("\n===== GENERATED PROMPT =====")
     print(prompt)
+    
 
     # -----------------------------
     # Gemini
     # -----------------------------
-
-    print("\n===== CALLING GEMINI =====")
-
-    response = model.generate_content(prompt)
+    
+    client = genai.Client(api_key=api_key)
+    response = client.models.generate_content(
+        model=MODEL_NAME,
+        contents=prompt,
+    )
 
     text = response.text
 

@@ -5,7 +5,7 @@ from app.prompts.templates import (
     SYSTEM_INSTRUCTION,
     OUTPUT_SCHEMA,
 )
-from app.schemas import PromptRequest
+from app.schemas.v1 import PromptRequest
 
 import textwrap
 

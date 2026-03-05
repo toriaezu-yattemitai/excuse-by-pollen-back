@@ -82,23 +82,32 @@ def retry_builder(previous_context: Inputs | dict, previous_excuse: str, retry_i
 
 
     USER_PROMPT = textwrap.dedent(f"""
-    以下の条件で言い訳文を生成したところ、以下のようになりました。
+    以下の条件で作成した前回の言い訳を、同じ設定のまま「もっと面白く」改善してください。
 
-    条件
+    【維持する設定】
     症状: {symptoms}
     つらさレベル: {inputs.level}
     相手: {target}
     状況: {situation}
     ニュアンス: {nuance}
     
-    生成結果
+    【前回の言い訳】
     {previous_excuse}
+
     
     この条件で、さらに面白く話を盛ってください。
     新たな条件は以下です。
     
-    新たな条件
+    【今回の追加指示】
     {retry_instruction}
+    
+    【改善ルール】
+    - 前回より「意外性」と「オチ」を強くする
+    - 誇張はOKだが、意味不明にはしない（会話として通ること）
+    - 1文目で引き込み、最後にクスッとする着地を作る
+    - 相手に伝わる自然な日本語にする
+    - 不快・攻撃的・差別的な表現は禁止
+
     """)
 
     return (

@@ -4,7 +4,7 @@ from app.prompts.templates import (
     FALLBACK_TARGET,
     SYSTEM_INSTRUCTION,
 )
-from app.schemas import PromptRequest
+from app.schemas.v1 import PromptRequest
 
 
 def _resolve_text(value: str | None, fallback: str) -> str:

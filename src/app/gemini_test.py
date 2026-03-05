@@ -10,7 +10,7 @@ SRC_PATH = Path(__file__).resolve().parents[1]
 if str(SRC_PATH) not in sys.path:
     sys.path.append(str(SRC_PATH))
 
-from back.src.app.services.v1 import build_prompt
+from app.services.v1 import build_prompt
 
 
 MODEL_NAME = "gemini-3-flash-preview"

@@ -2,7 +2,7 @@ import uuid
 
 from fastapi import APIRouter
 
-from back.src.app.schemas.v1.prompt import GenerationResult, PromptRequest, RetryRequest
+from app.schemas.v1.prompt import GenerationResult, PromptRequest, RetryRequest
 
 router = APIRouter()
 

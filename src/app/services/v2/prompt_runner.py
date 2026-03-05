@@ -1,5 +1,6 @@
 import os
 import uuid
+import json
 
 from typing import Any
 
@@ -30,7 +31,7 @@ def _load_api_key() -> str:
     
 # Public functions
 class Runner:
-    def __init__(self, *, api_key: None, model_name: None):
+    def __init__(self, *, api_key: str | None = None, model_name: str | None = None):
         self._api_key = api_key or _load_api_key()
         self._model_name = model_name or MODEL_NAME
         
@@ -46,6 +47,19 @@ class Runner:
                 response_schema=PromptResult
             )
         )
+
+    def _to_prompt_result(self, result: Any) -> PromptResult:
+        parsed = getattr(result, "parsed", None)
+        if parsed is not None:
+            if isinstance(parsed, PromptResult):
+                return parsed
+            return PromptResult.model_validate(parsed)
+
+        text = getattr(result, "text", None)
+        if not isinstance(text, str) or not text.strip():
+            raise RuntimeError("Gemini response is empty.")
+
+        return PromptResult.model_validate(json.loads(text))
         
     def generate(self, req: APIGenerateRequest) -> APIResult:
         
@@ -55,11 +69,12 @@ class Runner:
         prompt = generate_builder(inputs, options)
 
         result = self._push_gemini(prompt)
+        prompt_result = self._to_prompt_result(result)
         
         result_id = str(uuid.uuid4())
         return APIResult(
-            excuse="", 
-            score=90,
+            excuse=prompt_result.excuse,
+            score=prompt_result.score,
             id=result_id, 
             used_inputs=inputs
         )
@@ -73,11 +88,12 @@ class Runner:
         prompt = retry_builder(previous_context, previous_excuse, retry_instruction)
         
         result = self._push_gemini(prompt)
+        prompt_result = self._to_prompt_result(result)
         
         result_id = str(uuid.uuid4())
         return APIResult(
-            excuse="", 
-            score=90,
+            excuse=prompt_result.excuse,
+            score=prompt_result.score,
             id=result_id, 
             used_inputs=previous_context
         )

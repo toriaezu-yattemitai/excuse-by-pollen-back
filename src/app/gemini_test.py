@@ -3,9 +3,8 @@ import os
 from pathlib import Path
 import sys
 
-import json
 from dotenv import load_dotenv
-import google.generativeai as genai
+from google import genai
 
 SRC_PATH = Path(__file__).resolve().parents[1]
 if str(SRC_PATH) not in sys.path:
@@ -32,9 +31,11 @@ def main() -> None:
     payload = load_payload(INPUT_JSON_PATH)
     prompt = build_prompt(payload)
 
-    genai.configure(api_key=api_key)
-    model = genai.GenerativeModel(MODEL_NAME)
-    response = model.generate_content(prompt)
+    client = genai.Client(api_key=api_key)
+    response = client.models.generate_content(
+        model=MODEL_NAME,
+        contents=prompt,
+    )
 
     result = {
         "input_json_path": str(INPUT_JSON_PATH),
@@ -42,37 +43,6 @@ def main() -> None:
         "excuse": response.text,
     }
     print(json.dumps(result, ensure_ascii=False, indent=2))
-
-# プロンプト
-prompt = """
-次の条件で言い訳を作ってください。
-
-・花粉症がしんどい時の面白く、大げさな言い訳
-・説得力スコア(0〜100)
-
-JSONのみ出力してください。
-説明文は禁止です。
-
-{
-  "excuse": "...",
-  "score": number
-}
-"""
-
-# AIに質問
-response = model.generate_content(prompt)
-
-# Geminiの出力（文字列）
-text = response.text
-
-# JSONに変換
-data = json.loads(text)
-
-# 最終結果
-result = {
-    "excuse": data["excuse"],
-    "score": data["score"]
-}
 
 if __name__ == "__main__":
     main()

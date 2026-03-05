@@ -5,6 +5,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 from google import genai
+from google.genai import types
 
 
 # -----------------------------
@@ -66,9 +67,14 @@ def main() -> None:
     response = client.models.generate_content(
         model=MODEL_NAME,
         contents=prompt,
+        config=types.GenerateContentConfig(
+            response_mime_type="application/json",
+        ),
     )
 
     text = response.text
+    if text is None:
+        raise RuntimeError("Gemini response text is empty.")
 
     print("\n===== RAW GEMINI OUTPUT =====")
     print(text)

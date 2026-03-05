@@ -7,6 +7,6 @@ router = APIRouter()
 
 runner = Runner()
 
-@router.post("/api/v2/retry", response_model=APIResult)
+@router.post("/retry", response_model=APIResult)
 def retry_response(req: APIRetryRequest) -> APIResult:
     return runner.retry(req)

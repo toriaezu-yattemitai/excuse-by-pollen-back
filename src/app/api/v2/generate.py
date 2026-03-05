@@ -7,6 +7,6 @@ router = APIRouter()
 
 runner = Runner()
 
-@router.post("/api/v2/generate", response_model=APIResult)
+@router.post("/generate", response_model=APIResult)
 def generate_response(req: APIGenerateRequest) -> APIResult:
     return runner.generate(req)

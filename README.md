@@ -15,7 +15,7 @@ cp .env.sample .env
 ```
 3. 開発サーバーの起動
 ```bash
-PYTHONPATH=src uvicorn app.main:app --reload --host 0.0.0.0
+PYTHONPATH=src venv/bin/uvicorn app.main:app --reload
 ```
 
 - Windows (PowerShell)

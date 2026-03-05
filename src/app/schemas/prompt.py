@@ -1,3 +1,4 @@
+from typing import Annotated
 from pydantic import BaseModel, Field, field_validator
 
 
@@ -22,7 +23,7 @@ class PromptInputs(BaseModel):
         if value is None:
             return None
         if not isinstance(value, str):
-            return value
+            raise ValueError("target, situation, and nuance must be a string")
         text = value.strip()
         return text or None
 
@@ -34,3 +35,24 @@ class PromptOptions(BaseModel):
 class PromptRequest(BaseModel):
     inputs: PromptInputs
     options: PromptOptions = Field(default_factory=PromptOptions)
+
+
+class RetryRequest(BaseModel):
+    previous_context: PromptInputs
+    previous_excuse: str
+    retry_instruction: str
+    
+    @field_validator("previous_excuse", "retry_instruction", mode="before")
+    @classmethod
+    def normalize_text(cls, value: str | None) -> str | None:
+        if value is None or not isinstance(value, str):
+            raise ValueError("previous_excuse and retry_instruction must be a string")
+        text = value.strip()
+        return text
+    
+
+class GenerationResult(BaseModel):
+    excuse: str
+    score: Annotated[int, Field(ge=0, le=100)]
+    id: str
+    used_inputs: PromptInputs

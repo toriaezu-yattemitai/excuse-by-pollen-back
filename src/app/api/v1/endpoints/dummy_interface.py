@@ -2,13 +2,13 @@ import uuid
 
 from fastapi import APIRouter
 
-from app.schemas.dummy_schemas import GenerationResult, GenerateRequest, RetryRequest
+from app.schemas.prompt import GenerationResult, PromptRequest, RetryRequest
 
 router = APIRouter()
 
 
 @router.post("/generate", response_model=GenerationResult)
-async def generate_response(req: GenerateRequest) -> GenerationResult:
+async def generate_response(req: PromptRequest) -> GenerationResult:
     return GenerationResult(
         excuse="この後のMTGですが、花粉の影響で鼻水に溺れてしまっているので、少し遅れます。",
         score=60,

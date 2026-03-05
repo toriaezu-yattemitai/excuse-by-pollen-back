@@ -1,17 +1,22 @@
 import json
 import os
-from pathlib import Path
 import sys
+from pathlib import Path
 
-import json
 from dotenv import load_dotenv
 import google.generativeai as genai
 
+
+# -----------------------------
+# Python path 修正
+# -----------------------------
+
 SRC_PATH = Path(__file__).resolve().parents[1]
+
 if str(SRC_PATH) not in sys.path:
     sys.path.append(str(SRC_PATH))
 
-from app.services import build_prompt
+from app.services.prompt_builder import build_prompt
 
 
 MODEL_NAME = "gemini-3-flash-preview"
@@ -24,55 +29,74 @@ def load_payload(path: Path) -> dict:
 
 
 def main() -> None:
+
+    # -----------------------------
+    # APIキー読み込み
+    # -----------------------------
+
     load_dotenv()
+
     api_key = os.getenv("GEMINI_API_KEY")
+
     if not api_key:
         raise RuntimeError("GEMINI_API_KEY is not set. Please add it to .env.")
 
+    genai.configure(api_key=api_key)
+
+    model = genai.GenerativeModel(MODEL_NAME)
+
+    # -----------------------------
+    # JSON読み込み
+    # -----------------------------
+
     payload = load_payload(INPUT_JSON_PATH)
+
+    print("===== INPUT JSON =====")
+    print(json.dumps(payload, ensure_ascii=False, indent=2))
+
+    # -----------------------------
+    # Prompt Builder
+    # -----------------------------
+
     prompt = build_prompt(payload)
 
-    genai.configure(api_key=api_key)
-    model = genai.GenerativeModel(MODEL_NAME)
+    print("\n===== GENERATED PROMPT =====")
+    print(prompt)
+
+    # -----------------------------
+    # Gemini
+    # -----------------------------
+
+    print("\n===== CALLING GEMINI =====")
+
     response = model.generate_content(prompt)
 
-    result = {
-        "input_json_path": str(INPUT_JSON_PATH),
-        "prompt": prompt,
-        "excuse": response.text,
-    }
-    print(json.dumps(result, ensure_ascii=False, indent=2))
+    text = response.text
 
-# プロンプト
-prompt = """
-次の条件で言い訳を作ってください。
+    print("\n===== RAW GEMINI OUTPUT =====")
+    print(text)
 
-・花粉症がしんどい時の面白く、大げさな言い訳
-・説得力スコア(0〜100)
+    # -----------------------------
+    # JSON parse
+    # -----------------------------
 
-JSONのみ出力してください。
-説明文は禁止です。
+    try:
 
-{
-  "excuse": "...",
-  "score": number
-}
-"""
+        data = json.loads(text)
 
-# AIに質問
-response = model.generate_content(prompt)
+        result = {
+            "excuse": data["excuse"],
+            "score": data["score"]
+        }
 
-# Geminiの出力（文字列）
-text = response.text
+        print("\n===== PARSED RESULT =====")
+        print(json.dumps(result, ensure_ascii=False, indent=2))
 
-# JSONに変換
-data = json.loads(text)
+    except Exception as e:
 
-# 最終結果
-result = {
-    "excuse": data["excuse"],
-    "score": data["score"]
-}
+        print("\n❌ JSON PARSE ERROR")
+        print(e)
+
 
 if __name__ == "__main__":
     main()

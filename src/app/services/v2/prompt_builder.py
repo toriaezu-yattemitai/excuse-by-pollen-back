@@ -44,7 +44,7 @@ def _validate_non_empty_text(name: str, value: str) -> str:
     return text
 
 
-def generate_builder(inputs: Inputs | dict, options: PromptOptions | dict | None) -> str:
+def generate_builder(inputs: Inputs | dict, options: PromptOptions | dict | None , pollen: dict | None=None) -> str:
     inputs = _validate_inputs(inputs)
     options = _validate_options(options)
     target = _resolve_text(inputs.target, FALLBACK_TARGET)
@@ -52,10 +52,21 @@ def generate_builder(inputs: Inputs | dict, options: PromptOptions | dict | None
     nuance = _resolve_text(inputs.nuance, FALLBACK_NUANCE)
     symptoms = "、".join(inputs.symptoms)
 
+    pollen_text = ""
 
+    if pollen:
+        pollen_text = textwrap.dedent(f"""
+        花粉情報:
+        地域: {pollen.get("location")}
+        花粉指数: {pollen.get("index")}
+        花粉の種類: {pollen.get("species")}
+    """)
+    
     USER_PROMPT = textwrap.dedent(f"""
     以下の条件で言い訳文を生成してください。
-
+                                  
+    {pollen_text}
+    
     症状: {symptoms}
     つらさレベル: {inputs.level}
     相手: {target}

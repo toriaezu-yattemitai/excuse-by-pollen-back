@@ -64,7 +64,7 @@ def generate_builder(inputs: Inputs | dict, options: PromptOptions | dict | None
     
     USER_PROMPT = textwrap.dedent(f"""
     以下の条件で言い訳文を生成してください。
-                                  
+    
     {pollen_text}
     
     症状: {symptoms}
@@ -81,7 +81,7 @@ def generate_builder(inputs: Inputs | dict, options: PromptOptions | dict | None
     f"{OUTPUT_SCHEMA}"
     )
     
-def retry_builder(previous_context: Inputs | dict, previous_excuse: str, retry_instruction: str) -> str:
+def retry_builder(previous_context: Inputs | dict, previous_excuse: str, retry_instruction: str, pollen: dict | None=None) -> str:
     inputs = _validate_inputs(previous_context)
     previous_excuse = _validate_non_empty_text("previous_excuse", previous_excuse)
     retry_instruction = _validate_non_empty_text("retry_instruction", retry_instruction)
@@ -90,10 +90,22 @@ def retry_builder(previous_context: Inputs | dict, previous_excuse: str, retry_i
     situation = _resolve_text(inputs.situation, FALLBACK_SITUATION)
     nuance = _resolve_text(inputs.nuance, FALLBACK_NUANCE)
     symptoms = "、".join(inputs.symptoms)
+    
+    pollen_text = ""
+
+    if pollen:
+        pollen_text = textwrap.dedent(f"""
+        花粉情報:
+        地域: {pollen.get("location")}
+        花粉指数: {pollen.get("index")}
+        花粉の種類: {pollen.get("species")}
+    """)
 
 
     USER_PROMPT = textwrap.dedent(f"""
     以下の条件で作成した前回の言い訳を、同じ設定のまま「もっと面白く」改善してください。
+    
+    {pollen_text}
 
     【維持する設定】
     症状: {symptoms}

@@ -10,7 +10,7 @@ SRC_PATH = Path(__file__).resolve().parents[1]
 if str(SRC_PATH) not in sys.path:
     sys.path.append(str(SRC_PATH))
 
-from app.services import PollenRunner
+from app.services.v3.pollen_runner import PollenRunner
 
 APP_ROOT = Path(__file__).resolve().parents[2]
 ENV_PATH = APP_ROOT / ".env"

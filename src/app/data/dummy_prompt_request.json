@@ -7,6 +7,10 @@
     "nuance": "江戸時代風に"
   },
   "options": {
+    "location": {
+      "latitude": 45.046093,
+      "longitude": 142.089844
+    },
     "max_chars": 220
   }
 }

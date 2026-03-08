@@ -6,11 +6,11 @@ from typing import Any
 
 from dotenv import load_dotenv
 
-from app.services.v2.prompt_builder import generate_builder, retry_builder
+from app.services.v3.prompt_builder import generate_builder, retry_builder
 
-from app.schemas.v2.common import Inputs
-from app.schemas.v2.api import APIGenerateRequest, APIRetryRequest, APIResult
-from app.schemas.v2.prompt import PromptOptions, PromptResult
+from app.schemas.v3.common import Inputs
+from app.schemas.v3.api import APIGenerateRequest, APIRetryRequest, APIResult, APIResponseOptions
+from app.schemas.v3.prompt import PromptOptions as PollenOptions, PromptResult
 
 from app.prompts.settings import MODEL_NAME
 
@@ -63,12 +63,12 @@ class Runner:
 
         return PromptResult.model_validate(json.loads(text))
         
-    def generate(self, req: APIGenerateRequest) -> APIResult:
+    def generate(self, req: APIGenerateRequest, pollen_result: PollenOptions) -> APIResult:
         
         inputs: Inputs = req.inputs
-        options: PromptOptions = req.options
+        options = req.options
         
-        prompt = generate_builder(inputs, options)
+        prompt = generate_builder(inputs, options, pollen_result)
 
         result = self._push_gemini(prompt)
         prompt_result = self._to_prompt_result(result)
@@ -78,16 +78,17 @@ class Runner:
             excuse=prompt_result.excuse,
             score=prompt_result.score,
             id=result_id, 
-            used_inputs=inputs
+            used_inputs=inputs,
+            options=APIResponseOptions(badges=pollen_result),
         )
         
-    def retry(self, req: APIRetryRequest) -> APIResult:
+    def retry(self, req: APIRetryRequest, pollen_result: PollenOptions) -> APIResult:
         
         previous_context = req.previous_context
         previous_excuse = req.previous_excuse
         retry_instruction = req.retry_instruction
         
-        prompt = retry_builder(previous_context, previous_excuse, retry_instruction)
+        prompt = retry_builder(previous_context, previous_excuse, retry_instruction, pollen_result)
         
         result = self._push_gemini(prompt)
         prompt_result = self._to_prompt_result(result)
@@ -97,6 +98,7 @@ class Runner:
             excuse=prompt_result.excuse,
             score=prompt_result.score,
             id=result_id, 
-            used_inputs=previous_context
+            used_inputs=previous_context,
+            options=APIResponseOptions(badges=pollen_result),
         )
     

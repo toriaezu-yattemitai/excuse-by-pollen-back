@@ -6,9 +6,6 @@ from typing import Any
 
 from dotenv import load_dotenv
 
-from google import genai
-from google.genai import types
-
 from app.services.v2.prompt_builder import generate_builder, retry_builder
 
 from app.schemas.v2.common import Inputs
@@ -34,12 +31,17 @@ class Runner:
     def __init__(self, *, api_key: str | None = None, model_name: str | None = None):
         self._api_key = api_key or _load_api_key()
         self._model_name = model_name or MODEL_NAME
-        
-        
-        self._client = genai.Client(api_key=self._api_key)
+        self._client = None
+
+    def _get_client(self):
+        if self._client is None:
+            from google import genai
+            self._client = genai.Client(api_key=self._api_key)
+        return self._client
         
     def _push_gemini(self, prompt: str):
-        return self._client.models.generate_content(
+        from google.genai import types
+        return self._get_client().models.generate_content(
             model= self._model_name,
             contents=prompt,
             config=types.GenerateContentConfig(

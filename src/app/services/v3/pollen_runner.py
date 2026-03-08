@@ -26,7 +26,8 @@ def _load_api_key() -> str:
 
 
 class PollenRunner:
-    def __init__(self, api_key: str = _load_api_key(), language_code: str = DEFAULT_LANGUAGE_CODE, days: int = DEFAULT_DAYS) -> None:
+    def __init__(self, api_key: str | None = None, language_code: str = DEFAULT_LANGUAGE_CODE, days: int = DEFAULT_DAYS) -> None:
+        api_key = api_key or _load_api_key()
         if not api_key:
             raise ValueError("api_key is required.")
         if days < 1:

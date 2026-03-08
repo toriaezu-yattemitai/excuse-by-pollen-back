@@ -80,13 +80,13 @@ class Runner:
             options=APIResponseOptions(badges=pollen_result),
         )
         
-    def retry(self, req: APIRetryRequest) -> APIResult:
+    def retry(self, req: APIRetryRequest, pollen_result: PollenOptions) -> APIResult:
         
         previous_context = req.previous_context
         previous_excuse = req.previous_excuse
         retry_instruction = req.retry_instruction
         
-        prompt = retry_builder(previous_context, previous_excuse, retry_instruction)
+        prompt = retry_builder(previous_context, previous_excuse, retry_instruction, pollen_result)
         
         result = self._push_gemini(prompt)
         prompt_result = self._to_prompt_result(result)
@@ -96,6 +96,7 @@ class Runner:
             excuse=prompt_result.excuse,
             score=prompt_result.score,
             id=result_id, 
-            used_inputs=previous_context
+            used_inputs=previous_context,
+            options=APIResponseOptions(badges=pollen_result),
         )
     

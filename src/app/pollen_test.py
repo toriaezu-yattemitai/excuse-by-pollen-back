@@ -35,7 +35,7 @@ def main() -> None:
     payload = load_payload(INPUT_JSON_PATH)
     runner = PollenRunner(api_key=api_key)
     result = runner.run(payload)
-    print(json.dumps(result, ensure_ascii=False, indent=2))
+    print(json.dumps(result.model_dump(), ensure_ascii=False, indent=2))
 
 
 if __name__ == "__main__":

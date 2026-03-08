@@ -1,26 +1,17 @@
 import json
 import os
-from typing import Any, TypedDict
+from typing import Any
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
 from dotenv import load_dotenv
+from app.schemas.v3.prompt import PromptOptions
 
 POLLEN_API_URL = "https://pollen.googleapis.com/v1/forecast:lookup"
 GEOCODING_API_URL = "https://maps.googleapis.com/maps/api/geocode/json"
 DEFAULT_LANGUAGE_CODE = "ja"
 DEFAULT_DAYS = 1
-
-PollenResult = TypedDict(
-    "PollenResult",
-    {
-        "location": str,
-        "pollen-index": str,
-        "pollen-species": str,
-    },
-)
-
 
 # Private functions
 def _load_api_key() -> str:
@@ -45,7 +36,7 @@ class PollenRunner:
         self._language_code = language_code
         self._days = days
 
-    def run(self, payload: dict[str, Any]) -> PollenResult:
+    def run(self, payload: dict[str, Any]) -> PromptOptions:
         latitude, longitude = self._extract_coordinates(payload)
         pollen_payload = self._fetch_pollen_forecast(latitude, longitude)
         location_name = self._reverse_geocode_city(latitude, longitude)
@@ -141,7 +132,7 @@ class PollenRunner:
             return formatted_address.strip()
         return "unknown"
 
-    def _summarize_forecast(self, pollen_payload: dict[str, Any], location_name: str) -> PollenResult:
+    def _summarize_forecast(self, pollen_payload: dict[str, Any], location_name: str) -> PromptOptions:
         daily_info = pollen_payload.get("dailyInfo")
         if not isinstance(daily_info, list) or not daily_info:
             raise ValueError("dailyInfo is missing in Pollen API response.")
@@ -185,11 +176,11 @@ class PollenRunner:
         if not pollen_species:
             pollen_species = "unknown"
 
-        return {
-            "location": location_name,
-            "pollen-index": pollen_index,
-            "pollen-species": pollen_species,
-        }
+        return PromptOptions(
+            location=location_name,
+            pollen_index=pollen_index,
+            pollen_species=pollen_species,
+        )
 
     def _fetch_json(self, url: str, params: dict[str, str]) -> dict[str, Any]:
         request = Request(f"{url}?{urlencode(params)}", method="GET")

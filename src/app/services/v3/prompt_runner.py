@@ -63,7 +63,7 @@ class Runner:
 
         return PromptResult.model_validate(json.loads(text))
         
-    def generate(self, req: APIGenerateRequest, pollen_result: PollenOptions) -> APIResult:
+    def generate(self, req: APIGenerateRequest, pollen_result: PollenOptions | None) -> APIResult:
         
         inputs: Inputs = req.inputs
         options = req.options
@@ -74,15 +74,17 @@ class Runner:
         prompt_result = self._to_prompt_result(result)
         
         result_id = str(uuid.uuid4())
+        response_options = APIResponseOptions(badges=pollen_result) if pollen_result is not None else None
+
         return APIResult(
             excuse=prompt_result.excuse,
             score=prompt_result.score,
             id=result_id, 
             used_inputs=inputs,
-            options=APIResponseOptions(badges=pollen_result),
+            options=response_options,
         )
         
-    def retry(self, req: APIRetryRequest, pollen_result: PollenOptions) -> APIResult:
+    def retry(self, req: APIRetryRequest, pollen_result: PollenOptions | None) -> APIResult:
         
         previous_context = req.previous_context
         previous_excuse = req.previous_excuse
@@ -94,11 +96,13 @@ class Runner:
         prompt_result = self._to_prompt_result(result)
         
         result_id = str(uuid.uuid4())
+        response_options = APIResponseOptions(badges=pollen_result) if pollen_result is not None else None
+
         return APIResult(
             excuse=prompt_result.excuse,
             score=prompt_result.score,
             id=result_id, 
             used_inputs=previous_context,
-            options=APIResponseOptions(badges=pollen_result),
+            options=response_options,
         )
     

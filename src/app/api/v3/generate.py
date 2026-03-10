@@ -18,16 +18,18 @@ def _get_pollen_runner() -> PollenRunner:
     return PollenRunner()
 
 
-def _resolve_pollen(options: APIRequestOptions | None) -> PromptOptions:
+def _resolve_pollen(options: APIRequestOptions | None) -> PromptOptions | None:
     if options is None:
-        return PromptOptions(location="unknown", pollen_index="unknown", pollen_species="unknown")
+        return None
+    if options.location is None:
+        return None
     payload = {"options": options.model_dump()}
     try:
         return _get_pollen_runner().run(payload)
     except Exception:
-        return PromptOptions(location="unknown", pollen_index="unknown", pollen_species="unknown")
+        return None
 
-@router.post("/generate", response_model=APIResult)
+@router.post("/generate", response_model=APIResult, response_model_exclude_none=True)
 def generate_response(req: APIGenerateRequest) -> APIResult:
     pollen = _resolve_pollen(req.options)
     return _get_runner().generate(req, pollen)

@@ -8,7 +8,7 @@ class ExcuseStore:
     def insert(self, result: APIResult) -> None:
         if not isinstance(result, APIResult):
             raise TypeError("This result type is failed")
-        key = result.id
+        key = "v3:" + result.id
         value = result.model_dump_json()
         
         self._redis.set(key, value)

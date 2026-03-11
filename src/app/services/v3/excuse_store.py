@@ -1,20 +1,31 @@
 from upstash_redis import Redis
 from app.schemas.v3.api import APIResult
 
+
 class ExcuseStore:
+    _KEY_PREFIX = "v3:"
+
     def __init__(self, redis: Redis):
         self._redis = redis
+
+    def _key(self, excuse_id: str) -> str:
+        if excuse_id.startswith(self._KEY_PREFIX):
+            return excuse_id
+        return f"{self._KEY_PREFIX}{excuse_id}"
         
     def insert(self, result: APIResult) -> None:
         if not isinstance(result, APIResult):
             raise TypeError("This result type is failed")
-        key = "v3:" + result.id
+        key = self._key(result.id)
         value = result.model_dump_json()
         
         self._redis.set(key, value)
         
     def get(self, excuse_id: str) -> APIResult | None:
-        raw = self._redis.get(excuse_id)
+        raw = self._redis.get(self._key(excuse_id))
+        # Backward compatibility for records saved before key prefixing.
+        if raw is None:
+            raw = self._redis.get(excuse_id)
         if not raw:
             return None
         

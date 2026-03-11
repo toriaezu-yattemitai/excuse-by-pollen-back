@@ -21,7 +21,7 @@ def _get_pollen_runner() -> PollenRunner:
 
 @lru_cache
 def _get_excuse_store() -> ExcuseStore:
-    from back.src.app.infra.v3.redis_client import get_redis
+    from app.infra.v3.redis_client import get_redis
     return ExcuseStore(get_redis())
 
 
@@ -40,5 +40,8 @@ def _resolve_pollen(options: APIRequestOptions | None) -> PromptOptions | None:
 def generate_response(req: APIGenerateRequest) -> APIResult:
     pollen = _resolve_pollen(req.options)
     result =  _get_runner().generate(req, pollen)
-    _get_excuse_store().insert(result)
+    try:
+        _get_excuse_store().insert(result)
+    except:
+        pass
     return result

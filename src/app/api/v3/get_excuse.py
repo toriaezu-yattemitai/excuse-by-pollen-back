@@ -9,7 +9,7 @@ router = APIRouter()
 
 @lru_cache
 def _get_excuse_store() -> ExcuseStore:
-    from back.src.app.infra.v3.redis_client import get_redis
+    from app.infra.v3.redis_client import get_redis
     return ExcuseStore(get_redis())
 
 

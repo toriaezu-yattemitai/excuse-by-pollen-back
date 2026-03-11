@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 from functools import lru_cache
+import logging
 
 from app.schemas.v3.api import APIRetryRequest, APIRequestOptions, APIResult
 from app.schemas.v3.prompt import PromptOptions
@@ -8,6 +9,7 @@ from app.services.v3.pollen_runner import PollenRunner
 from app.services.v3.excuse_store import ExcuseStore
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 @lru_cache
 def _get_runner() -> Runner:
@@ -40,5 +42,8 @@ def _resolve_pollen(options: APIRequestOptions | None) -> PromptOptions | None:
 def retry_response(req: APIRetryRequest) -> APIResult:
     pollen = _resolve_pollen(req.options)
     result =  _get_runner().retry(req, pollen)
-    _get_excuse_store().insert(result)
+    try:
+        _get_excuse_store().insert(result)
+    except Exception:
+        logger.exception("Failed to persist retried excuse. id=%s", result.id)
     return result

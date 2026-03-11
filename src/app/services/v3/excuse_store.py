@@ -1,17 +1,26 @@
+import os
+
 from upstash_redis import Redis
 from app.schemas.v3.api import APIResult
 
 
 class ExcuseStore:
-    _KEY_PREFIX = "v3:"
+    _USE_RELEASE_PREFIX_ENV = "REDIS_USE_RELEASE_PREFIX"
 
     def __init__(self, redis: Redis):
         self._redis = redis
+        self._key_prefix = self._resolve_key_prefix()
+
+    def _resolve_key_prefix(self) -> str:
+        # Default to debug namespace unless release prefix is explicitly enabled.
+        if os.getenv(self._USE_RELEASE_PREFIX_ENV) is not None:
+            return "v3:"
+        return "v3-debug:"
 
     def _key(self, excuse_id: str) -> str:
-        if excuse_id.startswith(self._KEY_PREFIX):
+        if excuse_id.startswith(self._key_prefix):
             return excuse_id
-        return f"{self._KEY_PREFIX}{excuse_id}"
+        return f"{self._key_prefix}{excuse_id}"
         
     def insert(self, result: APIResult) -> None:
         if not isinstance(result, APIResult):

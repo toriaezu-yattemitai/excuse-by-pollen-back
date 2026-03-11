@@ -21,7 +21,7 @@ def _get_pollen_runner() -> PollenRunner:
 
 @lru_cache
 def _get_excuse_store() -> ExcuseStore:
-    from app.infra.v3.redis_cliant import get_redis
+    from back.src.app.infra.v3.redis_client import get_redis
     return ExcuseStore(get_redis())
 
 
